@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script>
+        function foo(){
+            var data = 1;
+            return function () {
+                console.log(++data);
+            }
+        }
+
+        var f1 = foo();//f1被赋值，是新的对象，与foo（）无关
+        var f2 = foo();//f2也是新的对象，声明函数无关，与其他对象也无关
+        f1();
+        f1();//由于闭包，f1对象的data没有回收，累加
+        f2();
+    </script>
+</head>
+<body>
+
+</body>
+</html>
