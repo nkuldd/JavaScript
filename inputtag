@@ -1,0 +1,191 @@
+<template>
+  <div
+    class="container"
+    :style="{ width: containerWidth + 'px' }"
+    @click="click"
+  >
+    <div id="tagContainer">
+      <List :split="false" style="display:inline-block">
+        <ListItem
+          v-for="(item, index) in data"
+          :key="index"
+          style="display:inline-block"
+        >
+          <Tag
+            class="tag"
+            :closable="showClear"
+            @on-close="handleClose(index)"
+            >{{ item.value }}</Tag
+          >{{ item.symbol ? item.symbol : "&nbsp;" }}&nbsp;
+        </ListItem>
+      </List>
+      <input
+        v-if="!disabled"
+        type="text"
+        class="input"
+        v-model="value"
+        @keyup="createTag"
+        @keyup.enter="handleEnter"
+        :style="{
+          width: inputWidth + 'px',
+          'max-width': containerWidth - 14 + 'px'
+        }"
+      />
+    </div>
+  </div>
+</template>
+<script>
+/**
+ * props data 默认数据
+ *       color 标签颜色
+ *       width input宽度
+ */
+export default {
+  name: "InputTag",
+  props: {
+    data: {
+      type: Array,
+      require: true
+    },
+    color: {
+      type: String
+    },
+    width: {
+      type: Number
+    },
+    showClear: {
+      type: Boolean,
+      default: false
+    },
+    disabled: {
+      type: Boolean,
+      default: true
+    }
+  },
+  data() {
+    return {
+      value: "",
+      length: 0,
+      inputWidth: 50,
+      containerWidth: this.width ? this.width : 500,
+      keySpace: false
+    };
+  },
+  watch: {
+    value(curVal) {
+      if (!curVal) {
+        this.inputWidth = 50;
+      } else {
+        this.inputWidth = this.len(curVal) * 7.8;
+      }
+    }
+  },
+  methods: {
+    close(index) {
+      this.data.splice(index, 1);
+    },
+    createTag(e) {
+      if (!this.value.replace(/ |-|\+/g, "")) {
+        return;
+      }
+      if (e.keyCode == 32) {
+        if (this.keySpace) {
+          const obj = {
+            value: this.value.replace(/ |-|\+/, ""),
+            symbol: " "
+          };
+          this.data.push(obj);
+          this.value = "";
+          this.keySpace = false;
+          return;
+        } else {
+          this.keySpace = true;
+        }
+      } else {
+        this.keySpace = false;
+      }
+
+      if ([187, 189, 107, 109].indexOf(e.keyCode) != -1) {
+        const obj = {
+          value: this.value.replace(/ |-|\+/, ""),
+          symbol: e.keyCode == 187 || e.keyCode == 107 ? "+" : "-"
+        };
+        this.data.push(obj);
+        this.value = "";
+      }
+    },
+    click(e) {
+      let input = e.target.getElementsByClassName("input")[0];
+      input.focus();
+    },
+    len(value) {
+      var len = 0;
+      var arr = value.split("");
+      for (var i = 0; i < arr.length; i++) {
+        if (arr[i].charCodeAt(0) < 299) {
+          len++;
+        } else {
+          len += 2;
+        }
+      }
+      return len;
+    },
+    handleClose(index) {
+      this.data.splice(index, 1);
+    },
+    handleEnter(event) {
+      if (this.value.replace(/ /g, ""))
+        this.data.push({ value: this.value, symbol: "" });
+      if (this.data.length > 0) {
+        this.value = "";
+        this.$emit("on-enter", event);
+      }
+    }
+  }
+};
+</script>
+
+<style lang="less" scoped>
+.container .ivu-tag-text {
+  word-break: normal;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow: hidden;
+}
+.container {
+  background: #fff;
+  display: inline-block;
+  min-height: 36px;
+  padding: 3px 0px 7px 3px;
+  font-size: 12px;
+  border: 1px solid #dcdee2;
+  border-radius: 4px;
+  color: #515a6e;
+  background-color: #fff;
+  cursor: text;
+  transition: border 0.2s ease-in-out, background 0.2s ease-in-out,
+    box-shadow 0.2s ease-in-out;
+  text-align: left;
+}
+.ivu-input-wrapper {
+  width: auto;
+}
+.input {
+  border: 0 !important;
+  outline: 0px;
+  height: 24px;
+  padding: 4px 0 0 0;
+  font-size: 14px;
+  color: #515a6e;
+}
+.ivu-tag {
+  height: 24px;
+}
+#tagContainer {
+  display: inline-block;
+  height: 28px;
+}
+.ivu-list-item {
+  padding: 2px 0 0 0;
+}
+</style>
